@@ -6,5 +6,8 @@
   },
   "scripts": {
     "gallery:manifest": "node scripts/generate-gallery-manifest.mjs"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
   }
 }
