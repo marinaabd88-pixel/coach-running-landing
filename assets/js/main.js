@@ -3,16 +3,22 @@
   var base = (cfg.siteUrl || "").replace(/\/$/, "");
 
   function applyConfig() {
-    var runtimeBase = base;
+    var pageBase = "";
     try {
-      if (!runtimeBase || runtimeBase.indexOf("example.com") !== -1) {
-        runtimeBase = window.location.origin;
-      }
-      if (runtimeBase === "null") {
-        runtimeBase = "";
+      // Prefer explicit siteUrl if set (and not placeholder); otherwise derive from current URL.
+      var cfgUrl = (base || "").trim();
+      if (cfgUrl && cfgUrl.indexOf("example.com") === -1) {
+        pageBase = new URL(cfgUrl.replace(/\/?$/, "/")).toString();
+      } else {
+        // Works for GitHub Pages subpaths too (e.g. /repo-name/).
+        pageBase = new URL(".", window.location.href).toString();
       }
     } catch (e) {
-      runtimeBase = base;
+      try {
+        pageBase = new URL(".", window.location.href).toString();
+      } catch (e2) {
+        pageBase = "";
+      }
     }
 
     if (cfg.formSubmitEmail) {
@@ -23,24 +29,24 @@
     }
     var nextInput = document.getElementById("form-next-url");
     if (nextInput) {
-      if (runtimeBase) {
-        nextInput.value = runtimeBase + "/?sent=1";
+      if (pageBase) {
+        nextInput.value = new URL("?sent=1", pageBase).toString();
       } else {
         nextInput.value = "?sent=1";
       }
     }
-    if (runtimeBase) {
+    if (pageBase) {
       var canon = document.getElementById("canonical-link");
       if (canon) {
-        canon.setAttribute("href", runtimeBase + "/");
+        canon.setAttribute("href", pageBase);
       }
       var ogUrl = document.getElementById("og-url");
       if (ogUrl) {
-        ogUrl.setAttribute("content", runtimeBase + "/");
+        ogUrl.setAttribute("content", pageBase);
       }
       var ogImg = document.getElementById("og-image");
       if (ogImg) {
-        ogImg.setAttribute("content", runtimeBase + "/images/og-cover.jpg");
+        ogImg.setAttribute("content", new URL("images/og-cover.jpg", pageBase).toString());
       }
     }
     document.querySelectorAll(".js-ig").forEach(function (a) {
