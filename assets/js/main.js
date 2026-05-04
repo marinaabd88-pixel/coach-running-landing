@@ -84,18 +84,32 @@
         btn.textContent = "שולח…";
       }
 
+      var encoded = new URLSearchParams(new FormData(form));
       fetch(form.action || "/api/lead", {
         method: "POST",
-        body: new FormData(form),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        body: encoded.toString(),
       })
         .then(function (r) {
-          if (!r.ok) throw new Error("bad_status");
-          return r.json().catch(function () {
-            return { ok: true };
+          return r.text().then(function (text) {
+            var data = {};
+            try {
+              data = text && text.length ? JSON.parse(text) : {};
+            } catch (eJson) {
+              data = {};
+            }
+            if (!r.ok) {
+              throw new Error((data && data.error) || "bad_status");
+            }
+            return data;
           });
         })
         .then(function (data) {
-          if (data && data.ok === false) throw new Error(data.error || "error");
+          if (data && data.ok === false) {
+            throw new Error(data.error || "error");
+          }
 
           form.hidden = true;
           if (ok) ok.hidden = false;

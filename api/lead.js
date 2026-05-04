@@ -44,20 +44,25 @@ module.exports = async function handler(req, res) {
       params.forEach(function (v, k) {
         data[k] = v;
       });
-    } else {
-      // Minimal multipart parser: extract UTF-8 text fields only (no file uploads expected).
-      // This is intentionally small to keep the project dependency-free.
-      var boundaryMatch = contentType.match(/boundary=([^;]+)/);
+    } else if (contentType.indexOf("multipart/form-data") !== -1) {
+      // Minimal multipart parser (fallback when clients send multipart).
+      var boundaryMatch = contentType.match(/boundary\s*=\s*([^;]+)/i);
       if (boundaryMatch) {
-        var boundary = "--" + boundaryMatch[1];
+        var boundaryRaw = boundaryMatch[1].trim().replace(/^[\"']|[\"']$/g, "");
+        var boundary = "--" + boundaryRaw;
         var parts = raw.split(boundary);
         parts.forEach(function (p) {
           var nameMatch = p.match(/name=\"([^\"]+)\"/);
           if (!nameMatch) return;
           var key = nameMatch[1];
-          var valueSplit = p.split("\r\n\r\n");
-          if (valueSplit.length < 2) return;
-          var value = valueSplit.slice(1).join("\r\n\r\n").replace(/\r\n--\s*$/, "").trim();
+          var sep = p.indexOf("\r\n\r\n");
+          if (sep === -1) sep = p.indexOf("\n\n");
+          if (sep === -1) return;
+          var head = p.slice(0, sep);
+          var bodyPart = p.slice(sep);
+          if (head.indexOf("filename=") !== -1) return;
+          bodyPart = bodyPart.replace(/^\r\n\r\n|^\n\n/, "");
+          var value = bodyPart.replace(/\r\n--\s*$/, "").replace(/\n--\s*$/, "").trim();
           if (value) data[key] = value;
         });
       }
