@@ -1,0 +1,7 @@
+{
+  "name": "coach-running-landing",
+  "private": true,
+  "scripts": {
+    "gallery:manifest": "node scripts/generate-gallery-manifest.mjs"
+  }
+}
