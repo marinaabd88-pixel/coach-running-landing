@@ -458,14 +458,159 @@
     var prevBtn = document.getElementById("gallery-prev");
     var nextBtn = document.getElementById("gallery-next");
     var hintEl = document.getElementById("gallery-hint");
+    var lightbox = document.getElementById("gallery-lightbox");
+    var lightboxStage = document.getElementById("gallery-lightbox-stage");
+    var lightboxCounter = document.getElementById("gallery-lightbox-counter");
+    var lightboxClose = document.getElementById("gallery-lightbox-close");
+    var lightboxPrev = document.getElementById("gallery-lightbox-prev");
+    var lightboxNext = document.getElementById("gallery-lightbox-next");
+    var lightboxBackdrop = lightbox
+      ? lightbox.querySelector("[data-lightbox-close]")
+      : null;
     if (!root || !prevBtn || !nextBtn) return;
 
     var items = [];
     var page = 0;
+    var lbIndex = 0;
+    var prevFocus = null;
+    var expandIconSvg =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
 
     function totalPages() {
       if (!items.length) return 1;
       return Math.ceil(items.length / GALLERY_PAGE_SIZE);
+    }
+
+    function renderLightboxMedia() {
+      if (!lightboxStage || !items.length) return;
+      lightboxStage.querySelectorAll("video").forEach(function (v) {
+        v.pause();
+      });
+      lightboxStage.innerHTML = "";
+      var item = items[lbIndex];
+      if (!item) return;
+      var src = item.src;
+      var url = galleryMediaUrl(src);
+      if (isVideoSrc(src)) {
+        var v = document.createElement("video");
+        v.className = "gallery-lightbox__media";
+        v.src = url;
+        v.controls = true;
+        v.setAttribute("playsinline", "");
+        v.setAttribute("preload", "metadata");
+        lightboxStage.appendChild(v);
+      } else {
+        var im = document.createElement("img");
+        im.className = "gallery-lightbox__media";
+        im.src = url;
+        im.alt = "";
+        lightboxStage.appendChild(im);
+      }
+      if (lightboxCounter) {
+        lightboxCounter.textContent = lbIndex + 1 + " / " + items.length;
+      }
+      var single = items.length <= 1;
+      if (lightboxPrev) lightboxPrev.disabled = single;
+      if (lightboxNext) lightboxNext.disabled = single;
+    }
+
+    function closeLightbox() {
+      if (!lightbox || lightbox.hidden) return;
+      if (lightboxStage) {
+        lightboxStage.querySelectorAll("video").forEach(function (v) {
+          v.pause();
+        });
+        lightboxStage.innerHTML = "";
+      }
+      lightbox.hidden = true;
+      lightbox.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("gallery-lightbox-open");
+      document.removeEventListener("keydown", onLightboxKeydown);
+      if (prevFocus && typeof prevFocus.focus === "function") {
+        try {
+          prevFocus.focus();
+        } catch (e1) {}
+      }
+      prevFocus = null;
+    }
+
+    function openLightbox(globalIdx) {
+      if (!lightbox || !lightboxStage || !items.length) return;
+      if (globalIdx < 0 || globalIdx >= items.length) return;
+      root.querySelectorAll("video").forEach(function (v) {
+        v.pause();
+      });
+      lbIndex = globalIdx;
+      prevFocus = document.activeElement;
+      lightbox.hidden = false;
+      lightbox.setAttribute("aria-hidden", "false");
+      document.body.classList.add("gallery-lightbox-open");
+      renderLightboxMedia();
+      document.addEventListener("keydown", onLightboxKeydown);
+      if (lightboxClose && typeof lightboxClose.focus === "function") {
+        try {
+          lightboxClose.focus();
+        } catch (e2) {}
+      }
+    }
+
+    function stepLightbox(delta) {
+      if (!items.length || items.length <= 1) return;
+      lbIndex = (lbIndex + delta + items.length) % items.length;
+      renderLightboxMedia();
+    }
+
+    function onLightboxKeydown(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeLightbox();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        stepLightbox(-1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        stepLightbox(1);
+      }
+    }
+
+    if (lightbox && lightboxClose) {
+      lightboxClose.addEventListener("click", function () {
+        closeLightbox();
+      });
+    }
+    if (lightboxBackdrop) {
+      lightboxBackdrop.addEventListener("click", function () {
+        closeLightbox();
+      });
+    }
+    if (lightboxPrev) {
+      lightboxPrev.addEventListener("click", function () {
+        stepLightbox(-1);
+      });
+    }
+    if (lightboxNext) {
+      lightboxNext.addEventListener("click", function () {
+        stepLightbox(1);
+      });
+    }
+
+    function attachOpenButton(figure, src, globalIndex) {
+      var openBtn = document.createElement("button");
+      openBtn.type = "button";
+      openBtn.className = "gallery-item__open";
+      openBtn.setAttribute(
+        "aria-label",
+        isVideoSrc(src) ? "פתיחת וידאו בתצוגה מורחבת" : "פתיחת תמונה בתצוגה מורחבת"
+      );
+      var icon = document.createElement("span");
+      icon.className = "gallery-item__open-icon";
+      icon.innerHTML = expandIconSvg;
+      openBtn.appendChild(icon);
+      openBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        openLightbox(globalIndex);
+      });
+      figure.appendChild(openBtn);
     }
 
     function render() {
@@ -477,7 +622,8 @@
       var start = page * GALLERY_PAGE_SIZE;
       var slice = items.slice(start, start + GALLERY_PAGE_SIZE);
 
-      slice.forEach(function (item) {
+      slice.forEach(function (item, idx) {
+        var globalIndex = start + idx;
         var article = document.createElement("article");
         article.className = "gallery-item";
         var figure = document.createElement("figure");
@@ -488,7 +634,7 @@
           var video = document.createElement("video");
           video.className = "gallery-media";
           video.src = url;
-          video.controls = true;
+          video.muted = true;
           video.setAttribute("playsinline", "");
           video.setAttribute("preload", "metadata");
           figure.appendChild(video);
@@ -508,6 +654,8 @@
           };
           figure.appendChild(img);
         }
+
+        attachOpenButton(figure, src, globalIndex);
 
         article.appendChild(figure);
         root.appendChild(article);
@@ -529,7 +677,7 @@
             tp +
             " · " +
             items.length +
-            " קבצים";
+            " קבצים · לחצו על פריט לתצוגה מורחבת";
         }
       }
     }
