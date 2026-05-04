@@ -33,7 +33,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/style.css?v=14" />
+  <link rel="stylesheet" href="assets/css/style.css?v=15" />
 
   <script type="application/ld+json">
   {
@@ -306,15 +306,12 @@
           <form
             class="lead-form"
             id="lead-form"
-            action="https://formsubmit.co/YOUR_EMAIL@example.com"
+            action="/api/lead"
             method="post"
             accept-charset="UTF-8"
             autocomplete="on"
             aria-describedby="form-privacy-hint"
           >
-            <input type="hidden" name="_subject" value="פנייה חדשה מאתר — מקסים קוגן מאמן ריצה" />
-            <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_template" value="table" />
             <input type="hidden" name="_next" id="form-next-url" value="https://example.com/?sent=1" />
             <input type="text" name="_honey" class="honeypot-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
@@ -340,8 +337,9 @@
             <textarea id="message" name="הודעה" rows="4" placeholder="יעדים, ניסיון קודם, אילוצי זמן…"></textarea>
 
             <button class="btn btn-primary btn-block" type="submit">שלחו — ואחזור אליכם</button>
+            <p class="form-error" id="form-error" hidden role="alert"></p>
             <p class="form-note" id="form-privacy-hint">
-              בהגשת הטופס הנתונים נשלחים בחיבור מוצפן (HTTPS) לשירות FormSubmit למטרת משלוח דוא״ל בלבד.
+              בהגשת הטופס הנתונים נשלחים בחיבור מוצפן (HTTPS) לשרת לצורך משלוח הודעת אימייל בלבד.
               אין שימוש בפרטים לשיווק. לפרטים נוספים ראו
               <a href="#privacy">מדיניות פרטיות</a>.
             </p>
@@ -374,6 +372,6 @@
 
   <script src="assets/js/site-config.js?v=1"></script>
   <script src="assets/js/gallery-data.js?v=6"></script>
-  <script src="assets/js/main.js?v=7"></script>
+  <script src="assets/js/main.js?v=8"></script>
 </body>
 </html>

@@ -21,12 +21,7 @@
       }
     }
 
-    if (cfg.formSubmitEmail) {
-      var form = document.getElementById("lead-form");
-      if (form) {
-        form.action = "https://formsubmit.co/" + cfg.formSubmitEmail;
-      }
-    }
+    // Lead form submits to /api/lead (Vercel) – no client-side override needed.
     var nextInput = document.getElementById("form-next-url");
     if (nextInput) {
       if (pageBase) {
@@ -66,6 +61,82 @@
   }
 
   applyConfig();
+
+  // Submit lead form via fetch (no redirect) to avoid 404s and work on all hosts.
+  (function initLeadForm() {
+    var form = document.getElementById("lead-form");
+    if (!form) return;
+    var ok = document.getElementById("form-success");
+    var toast = document.getElementById("toast-success");
+    var err = document.getElementById("form-error");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (err) {
+        err.hidden = true;
+        err.textContent = "";
+      }
+
+      var btn = form.querySelector("button[type=\"submit\"]");
+      var prevText = btn ? btn.textContent : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "שולח…";
+      }
+
+      fetch(form.action || "/api/lead", {
+        method: "POST",
+        body: new FormData(form),
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error("bad_status");
+          return r.json().catch(function () {
+            return { ok: true };
+          });
+        })
+        .then(function (data) {
+          if (data && data.ok === false) throw new Error(data.error || "error");
+
+          form.hidden = true;
+          if (ok) ok.hidden = false;
+
+          if (toast) {
+            toast.hidden = false;
+            toast.classList.add("is-open");
+            window.requestAnimationFrame(function () {
+              toast.classList.add("is-visible");
+            });
+            var dismissed = false;
+            var dismiss = function () {
+              if (dismissed) return;
+              dismissed = true;
+              toast.classList.remove("is-open");
+              toast.classList.remove("is-visible");
+              toast.classList.add("is-hiding");
+              window.setTimeout(function () {
+                toast.hidden = true;
+                toast.classList.remove("is-hiding");
+              }, 220);
+            };
+            toast.addEventListener("click", dismiss, { once: true });
+            window.setTimeout(dismiss, 3000);
+          }
+        })
+        .catch(function () {
+          if (err) {
+            err.hidden = false;
+            err.textContent =
+              "לא הצלחנו לשלוח כרגע. נסו שוב בעוד רגע או כתבו בוואטסאפ.";
+          }
+        })
+        .finally(function () {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = prevText || "שלחו — ואחזור אליכם";
+          }
+        });
+    });
+  })();
 
   if (typeof window.location.search !== "undefined" && window.location.search.indexOf("sent=1") !== -1) {
     var formEl = document.getElementById("lead-form");
