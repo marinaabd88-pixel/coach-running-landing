@@ -13,7 +13,7 @@ window.SITE_CONFIG = {
   /**
    * גרסת מטמון ל־assets/data/gallery-manifest.json — העלו אחרי עדכון הגלריה (npm run gallery:manifest).
    */
-  galleryManifestVersion: 3,
+  galleryManifestVersion: 4,
 
   /**
    * ביקורות Google (Places API — New). ב-Google Cloud: הפעלת Places API, מפתח עם הגבלה ל-HTTP referrer של האתר.

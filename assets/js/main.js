@@ -483,6 +483,8 @@
 
     function renderLightboxMedia() {
       if (!lightboxStage || !items.length) return;
+      var n = items.length;
+      lbIndex = Math.max(0, Math.min(Number(lbIndex) || 0, n - 1));
       lightboxStage.querySelectorAll("video").forEach(function (v) {
         v.pause();
       });
@@ -536,11 +538,13 @@
 
     function openLightbox(globalIdx) {
       if (!lightbox || !lightboxStage || !items.length) return;
-      if (globalIdx < 0 || globalIdx >= items.length) return;
+      var idx = Number(globalIdx);
+      if (globalIdx == null || globalIdx === "" || isNaN(idx)) return;
+      if (idx < 0 || idx >= items.length) return;
       root.querySelectorAll("video").forEach(function (v) {
         v.pause();
       });
-      lbIndex = globalIdx;
+      lbIndex = idx;
       prevFocus = document.activeElement;
       lightbox.hidden = false;
       lightbox.setAttribute("aria-hidden", "false");
@@ -555,8 +559,10 @@
     }
 
     function stepLightbox(delta) {
-      if (!items.length || items.length <= 1) return;
-      lbIndex = (lbIndex + delta + items.length) % items.length;
+      var n = items.length;
+      if (!n || n <= 1) return;
+      var cur = Number(lbIndex) || 0;
+      lbIndex = (cur + delta + n) % n;
       renderLightboxMedia();
     }
 

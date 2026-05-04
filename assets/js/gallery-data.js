@@ -11,7 +11,6 @@ window.GALLERY_ITEMS = [
   { src: "images/gallery/Gallery/WhatsApp Image 2026-05-03 at 21.09.23.jpeg" },
   { src: "images/gallery/Gallery/WhatsApp Image 2026-05-03 at 21.14.26.jpeg" },
   { src: "images/gallery/Gallery/WhatsApp Image 2026-05-03 at 21.17.01.jpeg" },
-  { src: "images/gallery/Gallery/WhatsApp Video 2026-05-03 at 20.54.37.mp4" },
   { src: "images/gallery/Gallery/WhatsApp Video 2026-05-03 at 20.55.19.mp4" },
   { src: "images/gallery/Gallery/WhatsApp Video 2026-05-03 at 21.09.24 (1).mp4" },
   { src: "images/gallery/Gallery/WhatsApp Video 2026-05-03 at 21.09.24.mp4" },
