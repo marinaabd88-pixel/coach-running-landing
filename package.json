@@ -1,6 +1,9 @@
 {
   "name": "coach-running-landing",
   "private": true,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "gallery:manifest": "node scripts/generate-gallery-manifest.mjs"
   }
