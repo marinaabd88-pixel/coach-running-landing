@@ -10,7 +10,7 @@
 
 After deploy, test:
 - Gallery loads (it reads `assets/data/gallery-manifest.json`).
-- Form redirect works (after submit you should land back on the same site with `?sent=1`).
+- WhatsApp link opens and works.
 
 ## Update gallery media
 

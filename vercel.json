@@ -3,12 +3,6 @@
   "framework": null,
   "buildCommand": "npm run gallery:manifest",
   "outputDirectory": ".",
-  "functions": {
-    "api/lead.js": {
-      "memory": 1024,
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
